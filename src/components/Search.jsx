@@ -1,22 +1,29 @@
 import { useState,useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+
 import axios from "axios"
 
 function Search() {
-  const [name, setName] = useState("");
-  const handleName = (e) => setName(e.target.value);
+  const [query, setQuery] = useState("");
+  const [results,setResults]=useState([])
+  
+  const handleName = (e) => setQuery(e.target.value);
+  
+  useEffect(() => {
+    if(!query){setResults([]);return;}
+      
+    const controller = new AbortController();
 
   const searchBeer = async ()=>{
     try {
-      const { data }=await axios.get("https://beers-api.edu.ironhack.com/beers",
-        {params:{name}});
-      console.log(data);
-      searchBeer();
+      const { data }=await axios.get("https://ih-beers-api2.herokuapp.com/beers/search",
+        {params:{ q: query}, signal: controller.signal});
+      setResults(data)
     } catch (error) {
       console.log(error)      
     }
   }
-  
+  Search()
+  return () => controller.abort();   }, [query]);
   
   
   return (
@@ -30,7 +37,7 @@ function Search() {
         <input
           type="text"
           className="form-control search-bar"
-          value={name}
+          value={query}
           onChange={handleName}
         />
         <button onClick={searchBeer} className="btn btn-primary">Search</button>
